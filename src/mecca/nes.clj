@@ -1,34 +1,5 @@
 (ns mecca.nes
-  (:require [clojure.spec.alpha :as s]
-            [clojure.java.io :as io]))
-
-(s/def :opcode/code (s/int-in 0x00 0xFF))
-
-(s/def :opcode/instruction
-  #{:adc :and :asl :bcc :bcs :beq :bit :bmi :bne :bpl :brk
-    :bvc :bvs :clc :cld :cli :clv :cmp :cpx :cpy :dec :dex
-    :dey :eor :inc :inx :iny :jmp :jsr :lda :ldx :ldy :lsr
-    :nop :ora :pha :php :pla :plp :rol :ror :rti :rts :sbc
-    :sec :sed :sei :sta :stx :sty :tax :tay :tsx :txa :txs
-    :tya})
-
-(s/def :opcode/address-mode
-  #{:immediate :zero :zero-x :zero-y
-    :absolute :absolute-x :absolute-y
-    :indirect :indirect-x :indirect-y
-    :relative :implied :accumulator})
-
-(s/def :opcode/bytes (s/int-in 1 4))
-
-(s/def :opcode/cycles (s/int-in 1 8))
-
-(s/def :opcode/op
-  (s/keys :req-un
-          [:opcode/instruction
-           :opcode/address-mode :opcode/bytes
-           :opcode/cycles]))
-
-(s/def :opcode/opcodes (s/map-of :opcode/code :opcode/op))
+  (:require [clojure.java.io :as io]))
 
 (def opcodes
   (into {}
@@ -211,16 +182,23 @@
         (str "0x" code))))
 
 (comment
+  
   (file->hex "resources/smb.nes")
-  (opcode "a9")
+  
+  (opcode "8d")
+  
   (loop [code       "78d8a910"
          instructions []]
     (cond
       (empty? code) instructions
       (= 1 (:bytes (opcode (subs code 0 2))))
-      (recur (subs code 2) (conj instructions (:instruction (opcode (subs code 0 2)))))
+      (recur (subs code 2)
+             (conj instructions (:instruction (opcode (subs code 0 2)))))
       (and
        (= 2 (:bytes (opcode (subs code 0 2))))
        (= :immediate (:address-mode (opcode (subs code 0 2)))))
-      (recur (subs code 4) (conj instructions [(:instruction (opcode (subs code 0 2))) (str "#$" (subs code 2 4))]))))
+      (recur (subs code 4)
+             (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                 (str "#$" (subs code 2 4))]))))
+ 
   )
