@@ -201,8 +201,14 @@
 (defn file->hex [file]
   (bytes->hex (file->bytes file)))
 
-(comment
-(file->hex (io/file "resources/smb.nsf"))
+(defn get-byte [file n]
+  (Integer/decode
+   (str "0x" (apply str (first (take 1 (drop n (partition 2 (file->hex (io/file file))))))))))
 
-  opcodes
+(defn opcode [code]
+  (get opcodes code))
+
+(comment
+  (file->hex "resources/smb.nes")
+(opcode (get-byte "resources/smb.nes" 16))
   )
