@@ -181,13 +181,21 @@
        (Integer/decode
         (str "0x" code))))
 
+(defn absolute-address
+  "Retrieves the value at specified address in file, ignoring header"
+  [file address]
+  (get-byte file (- address 16)))
+
+
 (comment
-  
+
   (file->hex "resources/smb.nes")
-  
+
   (opcode "8d")
   
-  (loop [code       "78d8a910"
+  (absolute-address "resources/smb.nes" 0x2000)
+
+  (loop [code         "78d8a910"
          instructions []]
     (cond
       (empty? code) instructions
@@ -199,6 +207,4 @@
        (= :immediate (:address-mode (opcode (subs code 0 2)))))
       (recur (subs code 4)
              (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                 (str "#$" (subs code 2 4))]))))
- 
-  )
+                                 (str "#$" (subs code 2 4))])))))
