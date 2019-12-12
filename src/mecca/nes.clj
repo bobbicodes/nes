@@ -206,9 +206,21 @@
    (str "0x" (apply str (first (take 1 (drop n (partition 2 (file->hex (io/file file))))))))))
 
 (defn opcode [code]
-  (get opcodes code))
+  (get opcodes
+       (Integer/decode
+        (str "0x" code))))
 
 (comment
   (file->hex "resources/smb.nes")
-(opcode (get-byte "resources/smb.nes" 16))
+  (opcode "a9")
+  (loop [code       "78d8a910"
+         instructions []]
+    (cond
+      (empty? code) instructions
+      (= 1 (:bytes (opcode (subs code 0 2))))
+      (recur (subs code 2) (conj instructions (:instruction (opcode (subs code 0 2)))))
+      (and
+       (= 2 (:bytes (opcode (subs code 0 2))))
+       (= :immediate (:address-mode (opcode (subs code 0 2)))))
+      (recur (subs code 4) (conj instructions [(:instruction (opcode (subs code 0 2))) (str "#$" (subs code 2 4))]))))
   )
