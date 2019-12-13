@@ -4,7 +4,8 @@
 (def opcodes
   (into {}
         (for [[code instruction address-mode bytes cycles]
-              [[0x69 :adc :immediate 2 2]
+              [[0x0b :aac :immediate 2 2]
+               [0x69 :adc :immediate 2 2]
                [0x65 :adc :zero 2 3]
                [0x75 :adc :zero-x 2 4]
                [0x6D :adc :absolute 3 4]
@@ -77,6 +78,7 @@
                [0x4C :jmp :absolute 3 3]
                [0x6C :jmp :indirect 3 5]
                [0x20 :jsr :absolute 3 6]
+               [0x02 :kil :implied 1 2]
                [0xA9 :lda :immediate 2 2]
                [0xA5 :lda :zero 2 3]
                [0xB5 :lda :zero-x 2 4]
@@ -101,6 +103,7 @@
                [0x4E :lsr :absolute 3 6]
                [0x5E :lsr :absolute-x 3 7]
                [0xEA :nop :implied 1 2]
+               [0x04 :nop :zero 2 2]
                [0x09 :ora :immediate 2 2]
                [0x05 :ora :zero 2 3]
                [0x15 :ora :zero-x 2 4]
@@ -126,6 +129,7 @@
                [0x40 :rti :implied 1 6]
                [0x60 :rts :implied 1 6]
                [0xE9 :sbc :immediate 2 2]
+               [0xEb :sbc :immediate 2 2]
                [0xE5 :sbc :zero 2 3]
                [0xF5 :sbc :zero-x 2 4]
                [0xED :sbc :absolute 3 4]
@@ -136,6 +140,9 @@
                [0x38 :sec :implied 1 2]
                [0xF8 :sed :implied 1 2]
                [0x78 :sei :implied 1 2]
+               [0x07 :slo :zero 2 5]
+               [0x0f :slo :absolute 3 6]
+               [0x13 :slo :indirect-y 2 8]
                [0x4f :sre :absolute 3 6]
                [0x85 :sta :zero 2 3]
                [0x95 :sta :zero-x 2 4]
@@ -178,9 +185,7 @@
    (str "0x" (apply str (first (take 1 (drop n (partition 2 (file->hex (io/file file))))))))))
 
 (defn opcode [code]
-  (get opcodes
-       (Integer/decode
-        (str "0x" code))))
+  (get opcodes (Integer/decode (str "0x" code))))
 
 (defn absolute-address
   "Retrieves the value at specified address in iNES file,
@@ -202,7 +207,7 @@
       (cond
         (empty? code) instructions
         (and
-(= 1 (:bytes (opcode (subs code 0 2))))
+         (= 1 (:bytes (opcode (subs code 0 2))))
          (= :accumulator (:address-mode (opcode (subs code 0 2)))))
         (recur (subs code 2)
                (conj instructions [(:instruction (opcode (subs code 0 2))) :a]))
@@ -227,6 +232,12 @@
         (recur (subs code 4)
                (conj instructions [(:instruction (opcode (subs code 0 2)))
                                    (str "($" (subs code 2 4) ",x)")]))
+        (and
+         (= 2 (:bytes (opcode (subs code 0 2))))
+         (= :indirect-y (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 4)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "($" (subs code 2 4) "),y")]))
         (and
          (= 2 (:bytes (opcode (subs code 0 2))))
          (= :zero (:address-mode (opcode (subs code 0 2)))))
@@ -254,17 +265,17 @@
         (and
          (= 3 (:bytes (opcode (subs code 0 2))))
          (= :absolute-y (:address-mode (opcode (subs code 0 2)))))
-(recur (subs code 6)
-       (conj instructions [(:instruction (opcode (subs code 0 2)))
-                           (str "$" (subs code 4 6) (subs code 2 4) ",y")])))))
+        (recur (subs code 6)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "$" (subs code 4 6) (subs code 2 4) ",y")])))))
 
 (comment
   
 (file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 256 380)
+  (subs (file->hex "resources/smb.nsf") 516 598)
   
-  (opcode "4f")
+  (opcode "11")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 256 384))
+  (disassemble (subs (file->hex "resources/smb.nsf") 256 596))
 
 )
