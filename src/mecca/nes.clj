@@ -186,18 +186,21 @@
   [file address]
   (get-byte file (- address 16)))
 
+(defn relative-address [n]
+  (if (< 127 (Integer/decode (str "0x" n)))
+    (- (- 255 (Integer/decode (str "0x" n))))
+    (Integer/decode (str "0x" n))))
 
 (comment
 
   (file->hex "resources/smb.nes")
 
-  (opcode "8d")
-  
-  (Integer/decode (str "0x" "20" "00"))
+  (opcode "10")
   
   (absolute-address "resources/smb.nes" 0x2000)
+          
 (let [file "resources/smb.nes"]
-  (loop [code         "78d8a9108d0020"
+  (loop [code         "78d8a9108d0020a2ff9aad022010fb"
          instructions []]
     (cond
       (empty? code) instructions
@@ -211,8 +214,15 @@
              (conj instructions [(:instruction (opcode (subs code 0 2)))
                                  (str "#$" (subs code 2 4))]))
       (and
+       (= 2 (:bytes (opcode (subs code 0 2))))
+       (= :relative (:address-mode (opcode (subs code 0 2)))))
+      (recur (subs code 4)
+             (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                 (relative-address (subs code 2 4))]))
+      (and
        (= 3 (:bytes (opcode (subs code 0 2))))
        (= :absolute (:address-mode (opcode (subs code 0 2)))))
       (recur (subs code 6)
              (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                 (str "$" (subs code 4 6) (subs code 2 4))]))))))
+                                 (str "$" (subs code 4 6) (subs code 2 4))])))))
+)
