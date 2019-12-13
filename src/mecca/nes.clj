@@ -212,6 +212,12 @@
                (conj instructions [(:instruction (opcode (subs code 0 2)))
                                    (relative-address (subs code 2 4))]))
         (and
+         (= 2 (:bytes (opcode (subs code 0 2))))
+         (= :indirect-x (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 4)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "($" (subs code 2 4) ",x)")]))
+        (and
          (= 3 (:bytes (opcode (subs code 0 2))))
          (= :absolute (:address-mode (opcode (subs code 0 2)))))
         (recur (subs code 6)
@@ -226,12 +232,12 @@
 
 (comment
 
-  (subs (file->hex "resources/smb.nes") 32 106)
+  (subs (file->hex "resources/smb.nes") 32 216)
   
-  (opcode "ad")
+  (opcode "01")
   
   (absolute-address "resources/smb.nes" 0x2000)
           
-  (disassemble (subs (file->hex "resources/smb.nes") 32 106))
+  (disassemble (subs (file->hex "resources/smb.nes") 32 216))
 
 )
