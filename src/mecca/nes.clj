@@ -136,6 +136,7 @@
                [0x38 :sec :implied 1 2]
                [0xF8 :sed :implied 1 2]
                [0x78 :sei :implied 1 2]
+               [0x4f :sre :absolute 3 6]
                [0x85 :sta :zero 2 3]
                [0x95 :sta :zero-x 2 4]
                [0x8D :sta :absolute 3 4]
@@ -260,10 +261,10 @@
 (comment
   
 (file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 256 370)
+  (subs (file->hex "resources/smb.nsf") 256 380)
   
-  (opcode "99")
+  (opcode "4f")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 256 374))
+  (disassemble (subs (file->hex "resources/smb.nsf") 256 384))
 
 )
