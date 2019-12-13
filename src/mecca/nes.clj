@@ -200,6 +200,11 @@
            instructions []]
       (cond
         (empty? code) instructions
+        (and
+(= 1 (:bytes (opcode (subs code 0 2))))
+         (= :accumulator (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 2)
+               (conj instructions [(:instruction (opcode (subs code 0 2))) :a]))
         (= 1 (:bytes (opcode (subs code 0 2))))
         (recur (subs code 2)
                (conj instructions (:instruction (opcode (subs code 0 2)))))
@@ -223,6 +228,12 @@
                                    (str "($" (subs code 2 4) ",x)")]))
         (and
          (= 2 (:bytes (opcode (subs code 0 2))))
+         (= :zero (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 4)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "$" (subs code 2 4))]))
+        (and
+         (= 2 (:bytes (opcode (subs code 0 2))))
          (= :zero-x (:address-mode (opcode (subs code 0 2)))))
         (recur (subs code 4)
                (conj instructions [(:instruction (opcode (subs code 0 2)))
@@ -243,10 +254,10 @@
 (comment
   
 (file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 256 308)
+  (subs (file->hex "resources/smb.nsf") 256 360)
   
-  (opcode "c9")
+  (opcode "0a")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 256 306))
+  (disassemble (subs (file->hex "resources/smb.nsf") 256 360))
 
 )
