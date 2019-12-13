@@ -191,44 +191,47 @@
     (- (- 255 (Integer/decode (str "0x" n))))
     (Integer/decode (str "0x" n))))
 
+(defn disassemble [code]
+    (loop [code         code
+           instructions []]
+      (cond
+        (empty? code) instructions
+        (= 1 (:bytes (opcode (subs code 0 2))))
+        (recur (subs code 2)
+               (conj instructions (:instruction (opcode (subs code 0 2)))))
+        (and
+         (= 2 (:bytes (opcode (subs code 0 2))))
+         (= :immediate (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 4)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "#$" (subs code 2 4))]))
+        (and
+         (= 2 (:bytes (opcode (subs code 0 2))))
+         (= :relative (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 4)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (relative-address (subs code 2 4))]))
+        (and
+         (= 3 (:bytes (opcode (subs code 0 2))))
+         (= :absolute (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 6)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "$" (subs code 4 6) (subs code 2 4))]))
+        (and
+         (= 3 (:bytes (opcode (subs code 0 2))))
+         (= :absolute-x (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 6)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "$" (subs code 4 6) (subs code 2 4) ",x")])))))
+
 (comment
 
-  (file->hex "resources/smb.nes")
-
-  (opcode "bd")
+  (subs (file->hex "resources/smb.nes") 32 106)
+  
+  (opcode "ad")
   
   (absolute-address "resources/smb.nes" 0x2000)
           
-(let [file "resources/smb.nes"]
-  (loop [code         "78d8a9108d0020a2ff9aad022010fbad022010fba0fea205bdd707"
-         instructions []]
-    (cond
-      (empty? code) instructions
-      (= 1 (:bytes (opcode (subs code 0 2))))
-      (recur (subs code 2)
-             (conj instructions (:instruction (opcode (subs code 0 2)))))
-      (and
-       (= 2 (:bytes (opcode (subs code 0 2))))
-       (= :immediate (:address-mode (opcode (subs code 0 2)))))
-      (recur (subs code 4)
-             (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                 (str "#$" (subs code 2 4))]))
-      (and
-       (= 2 (:bytes (opcode (subs code 0 2))))
-       (= :relative (:address-mode (opcode (subs code 0 2)))))
-      (recur (subs code 4)
-             (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                 (relative-address (subs code 2 4))]))
-      (and
-       (= 3 (:bytes (opcode (subs code 0 2))))
-       (= :absolute (:address-mode (opcode (subs code 0 2)))))
-      (recur (subs code 6)
-             (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                 (str "$" (subs code 4 6) (subs code 2 4))]))
-      (and
-       (= 3 (:bytes (opcode (subs code 0 2))))
-       (= :absolute-x (:address-mode (opcode (subs code 0 2)))))
-      (recur (subs code 6)
-             (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                 (str "$" (subs code 4 6) (subs code 2 4) ",x")])))))
+  (disassemble (subs (file->hex "resources/smb.nes") 32 106))
+
 )
