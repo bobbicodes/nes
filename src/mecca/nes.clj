@@ -195,12 +195,12 @@
 
   (file->hex "resources/smb.nes")
 
-  (opcode "10")
+  (opcode "bd")
   
   (absolute-address "resources/smb.nes" 0x2000)
           
 (let [file "resources/smb.nes"]
-  (loop [code         "78d8a9108d0020a2ff9aad022010fb"
+  (loop [code         "78d8a9108d0020a2ff9aad022010fbad022010fba0fea205bdd707"
          instructions []]
     (cond
       (empty? code) instructions
@@ -224,5 +224,11 @@
        (= :absolute (:address-mode (opcode (subs code 0 2)))))
       (recur (subs code 6)
              (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                 (str "$" (subs code 4 6) (subs code 2 4))])))))
+                                 (str "$" (subs code 4 6) (subs code 2 4))]))
+      (and
+       (= 3 (:bytes (opcode (subs code 0 2))))
+       (= :absolute-x (:address-mode (opcode (subs code 0 2)))))
+      (recur (subs code 6)
+             (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                 (str "$" (subs code 4 6) (subs code 2 4) ",x")])))))
 )
