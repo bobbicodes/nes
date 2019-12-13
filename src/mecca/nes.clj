@@ -249,15 +249,21 @@
          (= :absolute-x (:address-mode (opcode (subs code 0 2)))))
         (recur (subs code 6)
                (conj instructions [(:instruction (opcode (subs code 0 2)))
-                                   (str "$" (subs code 4 6) (subs code 2 4) ",x")])))))
+                                   (str "$" (subs code 4 6) (subs code 2 4) ",x")]))
+        (and
+         (= 3 (:bytes (opcode (subs code 0 2))))
+         (= :absolute-y (:address-mode (opcode (subs code 0 2)))))
+(recur (subs code 6)
+       (conj instructions [(:instruction (opcode (subs code 0 2)))
+                           (str "$" (subs code 4 6) (subs code 2 4) ",y")])))))
 
 (comment
   
 (file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 256 360)
+  (subs (file->hex "resources/smb.nsf") 256 370)
   
-  (opcode "0a")
+  (opcode "99")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 256 360))
+  (disassemble (subs (file->hex "resources/smb.nsf") 256 374))
 
 )
