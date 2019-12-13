@@ -241,11 +241,12 @@
                                    (str "$" (subs code 4 6) (subs code 2 4) ",x")])))))
 
 (comment
-(file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 256 270)
   
-  (opcode "95")
+(file->hex "resources/smb.nsf")
+  (subs (file->hex "resources/smb.nsf") 256 308)
+  
+  (opcode "c9")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 256 272))
+  (disassemble (subs (file->hex "resources/smb.nsf") 256 306))
 
 )
