@@ -182,7 +182,8 @@
         (str "0x" code))))
 
 (defn absolute-address
-  "Retrieves the value at specified address in file, ignoring header"
+  "Retrieves the value at specified address in iNES file,
+   ignoring 16-byte header."
   [file address]
   (get-byte file (- address 16)))
 
@@ -191,7 +192,10 @@
     (- (- 255 (Integer/decode (str "0x" n))))
     (Integer/decode (str "0x" n))))
 
-(defn disassemble [code]
+(defn disassemble
+  "Takes a string of hex bytes representing 6502 machine code,
+   outputs assembly code as EDN data."
+  [code]
     (loop [code         code
            instructions []]
       (cond
@@ -218,6 +222,12 @@
                (conj instructions [(:instruction (opcode (subs code 0 2)))
                                    (str "($" (subs code 2 4) ",x)")]))
         (and
+         (= 2 (:bytes (opcode (subs code 0 2))))
+         (= :zero-x (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 4)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "$" (subs code 2 4) ",x")]))
+        (and
          (= 3 (:bytes (opcode (subs code 0 2))))
          (= :absolute (:address-mode (opcode (subs code 0 2)))))
         (recur (subs code 6)
@@ -231,13 +241,11 @@
                                    (str "$" (subs code 4 6) (subs code 2 4) ",x")])))))
 
 (comment
-
-  (subs (file->hex "resources/smb.nes") 32 216)
+(file->hex "resources/smb.nsf")
+  (subs (file->hex "resources/smb.nsf") 256 270)
   
-  (opcode "01")
-  
-  (absolute-address "resources/smb.nes" 0x2000)
+  (opcode "95")
           
-  (disassemble (subs (file->hex "resources/smb.nes") 32 216))
+  (disassemble (subs (file->hex "resources/smb.nsf") 256 272))
 
 )
