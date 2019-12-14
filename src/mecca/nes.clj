@@ -26,6 +26,7 @@
                [0x16 :asl :zero-x 2 6]
                [0x0E :asl :absolute 3 6]
                [0x1E :asl :absolute-x 3 7]
+               [0x4b :asr :immediate 2 2]
                [0x90 :bcc :relative 2 2]
                [0xB0 :bcs :relative 2 2]
                [0xF0 :beq :relative 2 2]
@@ -55,12 +56,16 @@
                [0xC0 :cpy :immediate 2 2]
                [0xC4 :cpy :zero 2 3]
                [0xCC :cpy :absolute 3 4]
+               [0xc3 :dcp :indirect-x 2 8]
+               [0xc7 :dcp :zero 2 5]
+               [0xd7 :dcp :zero-x 2 6]
                [0xC6 :dec :zero 2 5]
                [0xD6 :dec :zero-x 2 6]
                [0xCE :dec :absolute 3 6]
                [0xDE :dec :absolute-x 3 7]
                [0xCA :dex :implied 1 2]
                [0x88 :dey :implied 1 2]
+               [0xc2 :dop :immediate 2 2]
                [0x49 :eor :immediate 2 2]
                [0x45 :eor :zero 2 3]
                [0x55 :eor :zero-x 2 4]
@@ -75,10 +80,15 @@
                [0xFE :inc :absolute-x 3 7]
                [0xE8 :inx :implied 1 2]
                [0xC8 :iny :implied 1 2]
+               [0xf7 :isb :zero-x 2 6]
+               [0xff :isb :absolute-x 3 7]
                [0x4C :jmp :absolute 3 3]
                [0x6C :jmp :indirect 3 5]
                [0x20 :jsr :absolute 3 6]
-               [0x02 :kil :implied 1 2]
+               [0x02 :kil :implied 1 0]
+               [0x12 :kil :implied 1 0]
+               [0x32 :kil :implied 1 0]
+               [0xb7 :lax :zero-y 2 4]
                [0xA9 :lda :immediate 2 2]
                [0xA5 :lda :zero 2 3]
                [0xB5 :lda :zero-x 2 4]
@@ -103,7 +113,14 @@
                [0x4E :lsr :absolute 3 6]
                [0x5E :lsr :absolute-x 3 7]
                [0xEA :nop :implied 1 2]
+               [0x5A :nop :implied 1 2]
                [0x04 :nop :zero 2 2]
+               [0x14 :nop :zero-x 2 4]
+               [0x34 :nop :zero-x 2 4]
+               [0xf4 :nop :zero-x 2 4]
+               [0x0c :nop :absolute 3 2]
+               [0x3c :nop :absolute-x 3 2]
+               [0x80 :nop :immediate 2 2]
                [0x09 :ora :immediate 2 2]
                [0x05 :ora :zero 2 3]
                [0x15 :ora :zero-x 2 4]
@@ -116,6 +133,8 @@
                [0x08 :php :implied 1 3]
                [0x68 :pla :implied 1 4]
                [0x28 :plp :implied 1 4]
+               [0x33 :rla :indirect-y 2 8]
+               [0x3f :rla :absolute-x 3 7]
                [0x2A :rol :accumulator 1 2]
                [0x26 :rol :zero 2 5]
                [0x36 :rol :zero-x 2 6]
@@ -126,8 +145,11 @@
                [0x76 :ror :zero-x 2 6]
                [0x6E :ror :absolute 3 6]
                [0x7E :ror :absolute-x 3 7]
+               [0x6f :rra :absolute 3 6]
                [0x40 :rti :implied 1 6]
                [0x60 :rts :implied 1 6]
+               [0x87 :sax :zero 2 3]
+               [0x8f :sax :absolute 3 4]
                [0xE9 :sbc :immediate 2 2]
                [0xEb :sbc :immediate 2 2]
                [0xE5 :sbc :zero 2 3]
@@ -140,10 +162,13 @@
                [0x38 :sec :implied 1 2]
                [0xF8 :sed :implied 1 2]
                [0x78 :sei :implied 1 2]
+               [0x03 :slo :indirect-x 2 8]
                [0x07 :slo :zero 2 5]
                [0x0f :slo :absolute 3 6]
                [0x13 :slo :indirect-y 2 8]
+               [0x47 :sre :zero 2 5]
                [0x4f :sre :absolute 3 6]
+               [0x57 :sre :zero 2 6]
                [0x85 :sta :zero 2 3]
                [0x95 :sta :zero-x 2 4]
                [0x8D :sta :absolute 3 4]
@@ -251,6 +276,12 @@
                (conj instructions [(:instruction (opcode (subs code 0 2)))
                                    (str "$" (subs code 2 4) ",x")]))
         (and
+         (= 2 (:bytes (opcode (subs code 0 2))))
+         (= :zero-y (:address-mode (opcode (subs code 0 2)))))
+        (recur (subs code 4)
+               (conj instructions [(:instruction (opcode (subs code 0 2)))
+                                   (str "$" (subs code 2 4) ",y")]))
+        (and
          (= 3 (:bytes (opcode (subs code 0 2))))
          (= :absolute (:address-mode (opcode (subs code 0 2)))))
         (recur (subs code 6)
@@ -272,10 +303,10 @@
 (comment
   
 (file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 516 598)
+  (subs (file->hex "resources/smb.nsf") 5330 5332)
   
-  (opcode "11")
+  (opcode "b7")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 256 596))
+  (disassemble (subs (file->hex "resources/smb.nsf") 5330 5334))
 
 )
