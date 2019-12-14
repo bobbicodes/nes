@@ -26,6 +26,7 @@
                [0x39 :and :absolute-y 3 4]
                [0x21 :and :indirect-x 2 6]
                [0x31 :and :indirect-y 2 5]
+               [0x6b :arr :immediate 2 2]
                [0x0A :asl :accumulator 1 2]
                [0x06 :asl :zero 2 5]
                [0x16 :asl :zero-x 2 6]
@@ -254,6 +255,7 @@
                [0x94 :sty :zero-x 2 4]
                [0x8C :sty :absolute 3 4]
                [0x9e :sxa :absolute-y 3 5]
+               [0x9c :sya :absolute-x 3 5]
                [0xAA :tax :implied 1 2]
                [0xA8 :tay :implied 1 2]
                [0xBA :tsx :implied 1 2]
@@ -383,10 +385,10 @@
 (comment
   
 (file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 31870 31878)
+  (subs (file->hex "resources/smb.nsf") 33108 33112)
   
   (opcode "6c")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 30000 31872))
+  (disassemble (subs (file->hex "resources/smb.nsf") 256 34168))
 
 )
