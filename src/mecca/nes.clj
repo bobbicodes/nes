@@ -36,6 +36,7 @@
                [0xab :atx :immediate 2 2]
                [0x9f :axa :absolute-y 3 5]
                [0x93 :axa :indirect-y 2 6]
+               [0xcb :axs :immediate 2 2]
                [0x90 :bcc :relative 2 2]
                [0xB0 :bcs :relative 2 2]
                [0xF0 :beq :relative 2 2]
@@ -282,8 +283,7 @@
   (bytes->hex (file->bytes file)))
 
 (defn get-byte [file n]
-  (Integer/decode
-   (str "0x" (apply str (first (take 1 (drop n (partition 2 (file->hex (io/file file))))))))))
+  (apply str (nth (partition 2 (file->hex (io/file file))) n)))
 
 (defn opcode [code]
   (get opcodes (Integer/decode (str "0x" code))))
@@ -383,12 +383,12 @@
                                    (str "($" (subs code 4 6) (subs code 2 4) ")")])))))
 
 (comment
+
+(count (file->hex "resources/metroid.nsf"))
+  (subs (file->hex "resources/metroid.nsf") 17948 17950)
   
-(file->hex "resources/smb.nsf")
-  (subs (file->hex "resources/smb.nsf") 33108 33112)
-  
-  (opcode "6c")
+  (opcode "0d")
           
-  (disassemble (subs (file->hex "resources/smb.nsf") 256 34168))
+  (disassemble (subs (file->hex "resources/metroid.nsf") 16000 17950))
 
 )
