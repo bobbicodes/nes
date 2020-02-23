@@ -389,6 +389,6 @@
   
   (opcode "0d")
           
-  (disassemble (subs (file->hex "resources/metroid.nsf") 16000 17950))
+  (disassemble (subs (file->hex "resources/metroid.nsf") 256 512))
 
 )
